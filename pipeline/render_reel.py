@@ -3,6 +3,12 @@
 # tarjetas de datos animadas, voces Kokoro, música trap suave y efectos.
 # Uso: python3 pipeline/render_reel.py guion.json salida.mp4
 #
+# v2 (2026-11-07, "más entretenidos"): gancho visible en el fotograma 0 (tarjeta del gancho grande desde t=0),
+# voz desde 0,05 s, pausas más cortas, voces algo más rápidas, cámara con cortes (primer plano del que
+# habla / plano general), zoom de golpe en palabras clave, subtítulos grandes por bloques de 1-3 palabras
+# tipo Hormozi, destello + temblor en el sello, interrupciones del robot ("interrumpe": true) y barra de progreso.
+# Ver pipeline/GANCHOS.md para cómo escribir guiones que enganchen.
+#
 # Formato del guion (ver pipeline/guion_ejemplo.json):
 # {
 #   "id": "dia19_natty",
@@ -10,6 +16,7 @@
 #     {"quien": "chico"|"robot", "texto": "subtítulo", "voz": "texto para TTS (opcional)",
 #      "clave": ["palabra"], "animo": "normal|orgullo|susto|sufre (chico)",
 #      "pantalla": "ojos|rayas|404 (robot)", "sello": "MITO (opcional)",
+#      "interrumpe": true (opcional: esta línea corta a la anterior, empieza 0,3 s antes),
 #      "tarjeta": {"tipo": "dato", "etiqueta": "...", "valor": 70, "unidad": "kg", "nota": "..."}
 #               | {"tipo": "lista", "titulo": "...", "items": [["nombre", "valor"], ...]}
 #               | {"tipo": "titulo", "texto": "TEXTO GRANDE", "sub": "..."}
@@ -43,6 +50,7 @@ def clean(x):
 LINES = clean(LINES)
 for L in LINES:
     assert L["quien"] in ("chico", "robot"), L
+if LINES[0].get("tarjeta", {}).get("tipo") == "titulo": LINES[0]["tarjeta"]["_gancho"] = True
 
 # ---------------- audio ----------------
 def read_wav(p):
@@ -60,10 +68,10 @@ KOK = Kokoro(f"{KOKORO_DIR}/kokoro-v1.0.onnx", f"{KOKORO_DIR}/voices-v1.0.bin")
 def tts(i, spk, text):
     raw, out = f"{WORK}/l{i}_raw.wav", f"{WORK}/l{i}.wav"
     if spk == "chico":
-        a, sr = KOK.create(text, voice="em_alex", speed=1.12, lang="es")
+        a, sr = KOK.create(text, voice="em_alex", speed=1.2, lang="es")
         flt = "asetrate=24000*1.06,aresample=24000,atempo=0.9434,highpass=f=90,acompressor=threshold=-18dB:ratio=3:attack=5:release=80"
     else:
-        a, sr = KOK.create(text, voice="em_santa", speed=0.98, lang="es")
+        a, sr = KOK.create(text, voice="em_santa", speed=1.06, lang="es")
         flt = ("asetrate=24000*0.93,aresample=24000,atempo=1.0753,highpass=f=70,aecho=0.9:0.6:9:0.18,"
                "flanger=delay=0.6:depth=0.4:speed=0.3:width=40,acompressor=threshold=-18dB:ratio=3:attack=5:release=80")
     sf.write(raw, a, sr)
@@ -72,14 +80,21 @@ def tts(i, spk, text):
     nz = np.where(np.abs(a) > 0.01)[0]
     return a[max(0, nz[0] - 200): nz[-1] + 2000] if len(nz) else a
 
-events, t = [], 0.3
+events, t = [], 0.05
 for i, L in enumerate(LINES):
     a = tts(i, L["quien"], L.get("voz") or L["texto"])
-    if i > 0 and LINES[i - 1]["quien"] != L["quien"]: t += 0.12
-    if L.get("tarjeta"): t += 0.15
+    if i > 0 and LINES[i - 1]["quien"] != L["quien"]: t += 0.05
+    if i > 0 and L.get("tarjeta"): t += 0.08
+    if i > 0 and L.get("interrumpe"):
+        # corta la línea anterior: se acorta su audio con un fundido y esta empieza encima
+        pv = events[-1]; t -= 0.3
+        keep = max(int(SR * 0.4), int((t - pv["start"] + 0.12) * SR))
+        if keep < len(pv["audio"]):
+            pv["audio"] = pv["audio"][:keep].copy(); pv["audio"][-int(SR * .1):] *= np.linspace(1, 0, int(SR * .1))
+            pv["dur"] = len(pv["audio"]) / SR
     events.append(dict(L, i=i, start=t, dur=len(a) / SR, audio=a))
-    t += len(a) / SR + 0.18
-TOTAL = t + 1.4
+    t += len(a) / SR + 0.08
+TOTAL = t + 1.2
 assert TOTAL <= 89, f"vídeo demasiado largo ({TOTAL:.1f}s)"
 N = int(TOTAL * FPS)
 mix = np.zeros(int(TOTAL * SR) + SR)
@@ -98,6 +113,7 @@ def thud():
 def buzz(d=0.35): x = tt(d); return np.sign(np.sin(2*np.pi*140*x)) * np.exp(-x*3) * 0.12
 for e in events:
     if e["i"] == 0 or e.get("tarjeta"): add(whoosh(), max(0, e["start"] - 0.3), 0.6)
+    elif events[e["i"] - 1]["quien"] != e["quien"]: add(whoosh(0.25), max(0, e["start"] - 0.15), 0.35)
     if e.get("tarjeta"): add(ding(660 + 80 * (e["i"] % 4)), e["start"] + 0.1, 0.7)
     if e.get("sello"): add(thud(), e["start"] + e["dur"] * 0.5, 0.9); add(buzz(), e["start"] + e["dur"] * 0.5 + .05, 1)
 bpm = 92; beat = 60 / bpm; x = 0.0; b = 0
@@ -235,6 +251,14 @@ def draw_card(d, c, k):
             col = tuple(int(DIM[j] + (WHITE[j] - DIM[j]) * on) for j in range(3))
             d.text((x0 + 34, y), str(it[0]), font=fit(str(it[0]), 38, "Bold", 600), fill=col, anchor="lm")
             if len(it) > 1: d.text((x1 - 34, y), str(it[1]), font=fit(str(it[1]), 38, "Black", 280), fill=GOLD, anchor="rm")
+    elif tipo == "titulo" and c.get("_gancho"):
+        # gancho: visible desde el fotograma 0, enorme, con rebote
+        sc = 1 + .25 * max(0, 1 - k / .12) * math.cos(k * 40); y0 = 470
+        card(d, x0 - 20, y0, x1 + 20, y0 + 330)
+        d.rounded_rectangle([x0 - 20, y0, x1 + 20, y0 + 12], 6, fill=RED)
+        d.text((540, y0 + 140), c.get("texto", ""), font=fit(c.get("texto", ""), int(118 * sc), "Black", int(900 * sc)), fill=GOLD, anchor="mm",
+               stroke_width=4, stroke_fill=(0, 0, 0))
+        if c.get("sub"): d.text((540, y0 + 262), c["sub"], font=fit(c["sub"], 46, "Bold", 880), fill=WHITE, anchor="mm")
     elif tipo == "titulo":
         card(d, x0, y0, x1, y0 + 240)
         d.text((540, y0 + 105), c.get("texto", ""), font=fit(c.get("texto", ""), 84, "Black", 860), fill=GOLD, anchor="mm")
@@ -255,38 +279,53 @@ def stamp(im, text, k):
     im.alpha_composite(lay.rotate(-8, resample=Image.BICUBIC), (40, 560))
 
 def norm(w): return w.strip("¿?¡!.,:;\"'()").lower()
+SUB_Y = 930
+def chunks_of(words, kws):
+    # bloques de 1-3 palabras; se corta tras puntuación y antes/después de una palabra clave larga
+    f = font(84, "Black"); out, cur = [], []
+    for i, w in enumerate(words):
+        if cur and (len(cur) >= 3 or f.getlength(" ".join(x for _, x in cur + [(i, w)])) > 900): out.append(cur); cur = []
+        cur.append((i, w))
+        if w[-1] in ".,!?:;" : out.append(cur); cur = []
+    if cur: out.append(cur)
+    return out
 def subtitle(d, e, ts):
     words = e["texto"].split(); kws = {norm(k) for k in e.get("clave", [])}
+    if "_chunks" not in e: e["_chunks"] = chunks_of(words, kws)
     wts = [len(w) + 2 for w in words]; tot = sum(wts)
-    p = (ts - e["start"]) / max(.1, e["dur"]); acc, spoken = 0, 0
+    p = (ts - e["start"]) / max(.1, e["dur"]); acc, spoken, wstart = 0, 0, e["start"]
     for i, w in enumerate(wts):
-        if p >= acc / tot: spoken = i + 1
+        if p >= acc / tot: spoken = i + 1; wstart = e["start"] + acc / tot * e["dur"]
         acc += w
-    f = font(56, "Bold"); sp = 16; lines, cur, cw = [], [], 0
-    for i, w in enumerate(words):
-        wl = f.getlength(w) + (36 if norm(w) in kws else 0)
-        if cur and cw + sp + wl > 920: lines.append(cur); cur, cw = [], 0
-        cur.append((i, w, wl)); cw += wl + (sp if len(cur) > 1 else 0)
-    lines.append(cur)
-    cl = 0
-    for li, ln in enumerate(lines):
-        if any(i < max(1, spoken) for i, _, _ in ln): cl = li
-    blk = lines[(cl // 3) * 3: (cl // 3) * 3 + 3]
-    y = 240
-    for ln in blk:
-        tw = sum(wl for _, _, wl in ln) + sp * (len(ln) - 1); x = W / 2 - tw / 2
-        for i, w, wl in ln:
-            iskw = norm(w) in kws; on = i < spoken
-            if iskw and on:
-                d.rounded_rectangle([x, y - 40, x + wl, y + 38], 12, fill=BLUE)
-                d.text((x + 18, y), w, font=f, fill=WHITE, anchor="lm")
-            else:
-                d.text((x + (18 if iskw else 0), y), w, font=f, fill=WHITE if on else (95, 93, 90), anchor="lm")
-            x += wl + sp
-        y += 86
-    # etiqueta de quién habla
+    cur_w = max(0, spoken - 1)
+    ch = next(c for c in e["_chunks"] if any(i == cur_w for i, _ in c))
+    pop = 1 + .14 * max(0, 1 - (ts - wstart) / .09)
+    f = font(84, "Black"); sp = 22
+    ws = [(i, w, font(int(84 * (pop if i == cur_w else 1)), "Black").getlength(w) + (40 if norm(w) in kws else 0)) for i, w in ch]
+    tw = sum(x for _, _, x in ws) + sp * (len(ws) - 1); x = W / 2 - tw / 2
+    for i, w, wl in ws:
+        iskw = norm(w) in kws; now = i == cur_w
+        fz = font(int(84 * (pop if now else 1)), "Black")
+        if iskw and i <= cur_w:
+            d.rounded_rectangle([x - 4, SUB_Y - 56, x + wl + 4, SUB_Y + 54], 14, fill=GOLD)
+            d.text((x + 20, SUB_Y), w, font=fz, fill=(12, 12, 14), anchor="lm")
+        else:
+            col = (255, 226, 92) if now else WHITE
+            d.text((x + (20 if iskw else 0), SUB_Y), w, font=fz, fill=col, anchor="lm", stroke_width=7, stroke_fill=(0, 0, 0))
+        x += wl + sp
     who = "EL CHICO" if e["quien"] == "chico" else "EL ROBOT"
-    d.text((540, 140), who, font=font(28, "Bold"), fill=GOLD, anchor="mm")
+    d.text((540, 140), who, font=font(30, "Bold"), fill=GOLD, anchor="mm")
+
+def kw_hit(e, ts):
+    # segundos desde que se dijo la última palabra clave de la línea (para el zoom de golpe)
+    words = e["texto"].split(); kws = {norm(k) for k in e.get("clave", [])}
+    if not kws: return 9
+    tot = sum(len(w) + 2 for w in words); acc, best = 0, 9
+    for w in words:
+        at = e["start"] + acc / tot * e["dur"]
+        if norm(w) in kws and at <= ts: best = ts - at
+        acc += len(w) + 2
+    return best
 
 # ---------------- render ----------------
 proc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
@@ -294,14 +333,17 @@ proc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_
                          "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", OUT], stdin=subprocess.PIPE)
 ONLY = [int(x) for x in os.environ.get("ONLY", "").split(",") if x]
 cur_e, card_e, last_mood = events[0], None, "normal"
+FIRST_ROBOT = next((e["i"] for e in events if e["quien"] == "robot"), 99)
 for fi in (ONLY or range(N)):
     ts = fi / FPS
     for e in events:
         if ts >= e["start"] - 0.15: cur_e = e
     card_e = None
     for e in events:
-        if e.get("tarjeta") and ts >= e["start"] - .1: card_e = e
-    im = BG.copy(); d = ImageDraw.Draw(im)
+        if e.get("tarjeta") and (ts >= e["start"] - .1 or e["i"] == 0): card_e = e
+    # la tarjeta del gancho desaparece cuando entra el robot
+    if card_e and card_e["i"] == 0 and cur_e["i"] >= FIRST_ROBOT: card_e = None
+    im = BG.copy()
     talking = ts <= cur_e["start"] + cur_e["dur"]
     lv = level(cur_e, ts) if talking else 0
     mouth = min(1, lv * 10)
@@ -325,16 +367,29 @@ for fi in (ONLY or range(N)):
         shake = (8 * math.sin(ts * 70) if kind == "chico" and mood in ("susto", "sufre") and active else 0)
         cx = 290 if kind == "chico" else 790
         im.alpha_composite(s2, (int(cx - s2.width / 2 + shake), int(1742 - s2.height + bob)))
+    # cámara: corte seco en cada línea. Gancho = primer plano fuerte; luego alterna primer plano del que
+    # habla y plano general (cada 3ª línea) para que la imagen cambie cada 2-3 s.
+    ci = cur_e["i"]
+    if ci == 0: z, fx = 1.4, 290
+    elif ci % 3 == 2: z, fx = 1.0, 540
+    else: z, fx = 1.22, (290 if cur_e["quien"] == "chico" else 790)
+    z *= 1.0 + 0.05 * max(0, 1 - k * 4)                     # golpe al entrar la línea
+    z *= 1.0 + 0.07 * max(0, 1 - kw_hit(cur_e, ts) / .18)   # golpe en la palabra clave
+    sello_k = k - cur_e["dur"] * .5 if cur_e.get("sello") else -1
+    shx = int(18 * math.sin(ts * 90) * max(0, 1 - sello_k / .3)) if 0 <= sello_k < .3 else 0
+    cw, ch = W / z, H / z   # el suelo (y=1742) queda siempre abajo, bajo los subtítulos
+    bx0 = min(max(fx - cw / 2, 0), W - cw); by0 = min(max(1742 - 1800 / z, 0), H - ch)
+    scene = im.resize((W, H), Image.BILINEAR, box=(bx0, by0, bx0 + cw, by0 + ch)) if z > 1.001 else im
+    if shx: scene = scene.transform((W, H), Image.AFFINE, (1, 0, -shx, 0, 1, 0))
+    im = scene.copy(); d = ImageDraw.Draw(im)
     if card_e: draw_card(d, card_e["tarjeta"], ts - card_e["start"])
     if cur_e.get("sello") and k > cur_e["dur"] * .5:
         stamp(im, cur_e["sello"], k - cur_e["dur"] * .5)
     subtitle(d, cur_e, max(ts, cur_e["start"] + .01))
+    d.rectangle([0, H - 10, int(W * ts / TOTAL), H], fill=GOLD)   # barra de progreso
     frame = im.convert("RGB")
-    # golpe de zoom en cada cambio de línea
-    z = 1.0 + 0.05 * max(0, 1 - k * 4)
-    if z > 1.001:
-        cw, ch = W / z, H / z
-        frame = frame.resize((W, H), Image.BILINEAR, box=((W - cw) / 2, (H - ch) / 2, (W + cw) / 2, (H + ch) / 2))
+    if 0 <= sello_k < .08:   # destello blanco al poner el sello
+        frame = Image.blend(frame, Image.new("RGB", (W, H), (255, 255, 255)), .55 * (1 - sello_k / .08))
     if ONLY: frame.save(f"{WORK}/f{fi:04d}.png"); continue
     proc.stdin.write(frame.tobytes())
 proc.stdin.close(); rc = proc.wait()

@@ -1,0 +1,19 @@
+{
+  "id": "dia20_eddie_hall_lavadora",
+  "dia": 20,
+  "lineas": [
+    {"quien": "chico", "animo": "orgullo", "texto": "Robot, hoy muevo la lavadora yo solo.", "clave": ["solo."],
+     "tarjeta": {"tipo": "titulo", "texto": "YO VS LAVADORA", "sub": "spoiler: gana la lavadora"}},
+    {"quien": "robot", "pantalla": "rayas", "interrumpe": true, "texto": "Para. Ya he llamado a urgencias.", "clave": ["urgencias."], "sello": "PELIGRO"},
+    {"quien": "chico", "animo": "orgullo", "texto": "¡Eddie Hall levanta quinientos kilos!", "voz": "¡Eddie Hall levanta quinientos kilos!", "clave": ["quinientos"],
+     "tarjeta": {"tipo": "dato", "etiqueta": "Peso muerto de Eddie Hall (2016)", "valor": 500, "unidad": "kg", "nota": "Tú: ayer te cansaste abriendo un yogur"}},
+    {"quien": "robot", "texto": "Eddie entrena desde hace años. Tú, desde el martes.", "clave": ["martes."]},
+    {"quien": "robot", "texto": "Pero lo peor no es el peso. Es la palanca.", "clave": ["palanca."]},
+    {"quien": "robot", "texto": "Cuanto más lejos del cuerpo, más carga tu espalda. Física pura.", "clave": ["espalda."],
+     "tarjeta": {"tipo": "lista", "titulo": "Cómo levantar sin romperte", "items": [["Carga pegada al cuerpo", "SÍ"], ["Espalda neutra", "SÍ"], ["Empuja con las piernas", "SÍ"], ["Girar el tronco con peso", "NO"]]}},
+    {"quien": "chico", "animo": "sufre", "texto": "Vale... ¿y si la empujo con el pie?", "clave": ["pie?"]},
+    {"quien": "robot", "pantalla": "404", "texto": "Error. Pide ayuda. La lavadora pesa más que tu ego.", "clave": ["ego."]},
+    {"quien": "robot", "texto": "Comenta: ¿tú levantas con la espalda o con las piernas?", "clave": ["piernas?"],
+     "tarjeta": {"tipo": "cta", "arriba": "COMENTA", "grande": "¿ESPALDA O PIERNAS?", "abajo": "el robot lee todos los comentarios"}}
+  ]
+}
