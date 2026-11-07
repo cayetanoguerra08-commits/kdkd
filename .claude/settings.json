@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__vidIQ__vidiq_video_upload",
+      "mcp__vidIQ__vidiq_instagram_publish_reel",
+      "mcp__vidIQ__vidiq_instagram_connected_accounts",
+      "mcp__Metricool_Social_Media_Management__getBrandSettings",
+      "mcp__Metricool_Social_Media_Management__createScheduledPost",
+      "mcp__Metricool_Social_Media_Management__getScheduledPosts"
+    ]
+  }
+}
