@@ -32,7 +32,8 @@ Misma estructura que `pipeline/guiones/dia21_creatina_calvo.json`, en `pipeline/
 1. `vidiq_video_upload` con la URL raw → `videoUrl`.
 2. `vidiq_instagram_publish_reel`: `platformAccountId` 28882653428064891, `videoUrl`, `caption`, `isAiGenerated: true`.
 3. Repetir con `containerId` cada ~10 s hasta `PUBLISHED`.
-4. Si el acceso de Instagram caducó: parar y avisar (hay que reconectar Instagram en vidIQ).
+4. Si responde "inconclusive", seguir consultando el mismo containerId (suele acabar en PUBLISHED). No crear otro.
+5. Si el acceso de Instagram caducó: parar y avisar (hay que reconectar Instagram en vidIQ).
 
 Caption: gancho con pregunta + 2-3 frases con el dato clave + CTA de comentario + 15 hashtags:
 `#gym #gimnasio #fitness #gymhumor #humorgym #musculacion #entrenamiento #gymespaña #fitnessespañol #gymtips #consejosgym` + 4 del tema.
@@ -46,7 +47,7 @@ Si `getBrandSettings` dice que no hay redes conectadas, saltar. `createScheduled
    "tags": ["gym","gimnasio","fitness","humor gym", "..."], "category": "COMEDY", "madeForKids": false}}
 ```
 Descripción: 2 frases + CTA + `#shorts #gym #gimnasio #fitness #gymhumor` + 2 del tema.
-Nota: la rama `video` se reemplaza en la siguiente subida, así que Metricool debe publicar antes (por eso +5 min).
+Metricool copia el vídeo a su servidor al crear la publicación, así que reemplazar la rama `video` después no afecta.
 
 ## 8. Registro
 Añadir línea a `pipeline/publicados.md`, commit del guion y registro, `git push origin HEAD:main`.
