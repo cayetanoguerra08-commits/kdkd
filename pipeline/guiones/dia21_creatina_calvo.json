@@ -1,0 +1,18 @@
+{
+  "id": "dia21_creatina_calvo",
+  "dia": 21,
+  "lineas": [
+    {"quien": "chico", "animo": "susto", "texto": "¡NO tomo creatina! ¡Me voy a quedar calvo!", "voz": "¡No tomo creatina! ¡Me voy a quedar calvo!", "clave": ["calvo!"],
+     "tarjeta": {"tipo": "titulo", "texto": "CREATINA = CALVO", "sub": "¿mito o realidad?"}},
+    {"quien": "robot", "pantalla": "rayas", "texto": "Analizando tu cabeza. El pelo se te cae por genética, no por un polvo blanco.", "clave": ["genética,"], "sello": "MITO"},
+    {"quien": "chico", "animo": "normal", "texto": "¡Pero lo leí en un foro!", "clave": ["foro!"]},
+    {"quien": "robot", "texto": "Un estudio de 2009 con 20 jugadores de rugby. Solo uno. Nunca se ha repetido.", "voz": "Un estudio de dos mil nueve con veinte jugadores de rugby. Solo uno. Nunca se ha repetido.", "clave": ["uno."],
+     "tarjeta": {"tipo": "dato", "etiqueta": "Estudios que lo confirman", "valor": 0, "unidad": "", "nota": "Solo 1 estudio pequeño (2009), nunca replicado"}},
+    {"quien": "robot", "texto": "Y en 2025 lo comprobaron: creatina 12 semanas y el pelo, igual.", "voz": "Y en dos mil veinticinco lo comprobaron: creatina doce semanas, y el pelo, igual.", "clave": ["igual."],
+     "tarjeta": {"tipo": "lista", "titulo": "Lo que sí hace la creatina", "items": [["Más fuerza", "+5-10 %"], ["Más repeticiones", "SÍ"], ["Dosis", "3-5 g/día"], ["Calvicie", "NO"]]}},
+    {"quien": "chico", "animo": "orgullo", "texto": "Entonces, ¿me tomo el bote entero?", "clave": ["entero?"]},
+    {"quien": "robot", "pantalla": "404", "texto": "Error. Tres gramos al día. Lo de tu cabeza ya no tiene arreglo.", "voz": "Error. Tres gramos al día. Lo de tu cabeza ya no tiene arreglo.", "clave": ["Tres", "gramos"]},
+    {"quien": "robot", "texto": "Comenta: ¿tomas creatina o te da miedo?", "clave": ["creatina"],
+     "tarjeta": {"tipo": "cta", "arriba": "COMENTA", "grande": "¿TOMAS CREATINA?", "abajo": "el robot responde a todos"}}
+  ]
+}
