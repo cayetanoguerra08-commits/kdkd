@@ -38,17 +38,15 @@ Misma estructura que `pipeline/guiones/dia21_creatina_calvo.json`, en `pipeline/
 Caption: gancho con pregunta + 2-3 frases con el dato clave + CTA de comentario + 15 hashtags:
 `#gym #gimnasio #fitness #gymhumor #humorgym #musculacion #entrenamiento #gymespaña #fitnessespañol #gymtips #consejosgym` + 4 del tema.
 
-## 7. YouTube Shorts + TikTok (Metricool, blogId 7943370)
-Mira en `getBrandSettings` → `networksData` qué redes hay (youtubeData, tiktokData). Pon en `providers` solo las conectadas; si no hay ninguna, saltar.
-Una sola publicación con las dos redes. `createScheduledPost`, fecha = ahora + 5 min (Atlantic/Canary):
+## 7. YouTube Shorts (Metricool, blogId 7943370), sin TikTok
+Solo en la ejecución de las 17:50 y en días impares (límite gratis: 20 publicaciones/mes). Si `getBrandSettings` no muestra youtubeData, saltar. `createScheduledPost`, fecha = ahora + 5 min (Atlantic/Canary):
 ```
 {"autoPublish": true, "draft": false, "text": "<descripción>", "media": ["<URL raw>"],
- "providers": [{"network": "youtube"}, {"network": "tiktok"}],
+ "providers": [{"network": "youtube"}],
  "youtubeData": {"title": "<≤ 70 caracteres> #shorts", "type": "short", "privacy": "public",
-   "tags": ["gym","gimnasio","fitness","humor gym", "..."], "category": "COMEDY", "madeForKids": false},
- "tiktokData": {"privacyOption": "PUBLIC_TO_EVERYONE", "title": "<gancho corto>", "isAigc": true}}
+   "tags": ["gym","gimnasio","fitness","humor gym", "..."], "category": "COMEDY", "madeForKids": false}}
 ```
-Descripción (sirve de texto en TikTok también): 2 frases + CTA + `#shorts #gym #gimnasio #fitness #gymhumor` #fyp #parati + 2 del tema.
+Descripción: 2 frases + CTA + `#shorts #gym #gimnasio #fitness #gymhumor` + 2 del tema.
 Metricool copia el vídeo a su servidor al crear la publicación, así que reemplazar la rama `video` después no afecta.
 
 ## 8. Registro
