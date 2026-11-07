@@ -13,9 +13,12 @@ export KOKORO_DIR=/mnt/project-files/pipeline-cache/kokoro   # o la ruta que imp
 - El día con número más bajo que no esté en `publicados.md`.
 
 ## 3. Guion JSON
-Misma estructura que `pipeline/guiones/dia21_creatina_calvo.json`, en `pipeline/guiones/diaNN_<slug>.json`.
-- 6-10 líneas, 20-40 s. Español de España, frases cortas.
-- Línea 1: gancho del Chico (mito absurdo o error exagerado) con tarjeta `titulo`.
+**Leer antes `pipeline/GANCHOS.md`** (reglas de gancho y ritmo, obligatorias). Si ya existe `pipeline/guiones/diaNN_*.json` para el día elegido, usarlo tal cual.
+Misma estructura que `pipeline/guiones/dia20_eddie_hall_lavadora.json` (ejemplo v2), en `pipeline/guiones/diaNN_<slug>.json`.
+- 7-9 líneas, 20-28 s. Español de España, frases cortas (máx. 12 palabras; el gancho, máx. 8).
+- Línea 1: gancho del Chico (mito absurdo o error exagerado) con tarjeta `titulo` de 2-5 palabras: se ve desde el fotograma 0.
+- Línea 2: el Robot le corta antes del segundo 3 con `"interrumpe": true`.
+- Un giro a mitad ("Pero lo peor no es eso...") y final con pregunta de dos bandos.
 - El Robot: sarcástico, con ciencia real y datos correctos. No inventar estudios.
 - 2-3 tarjetas `dato`/`lista`; un `sello` (MITO, ERROR...) al desmontar el mito.
 - Remate cómico + última línea CTA con tarjeta `cta`.
@@ -35,7 +38,7 @@ Misma estructura que `pipeline/guiones/dia21_creatina_calvo.json`, en `pipeline/
 4. Si responde "inconclusive", seguir consultando el mismo containerId (suele acabar en PUBLISHED). No crear otro.
 5. Si el acceso de Instagram caducó: parar y avisar (hay que reconectar Instagram en vidIQ).
 
-Caption: gancho con pregunta + 2-3 frases con el dato clave + CTA de comentario + 15 hashtags:
+Caption: primera línea = el gancho como pregunta polémica + 2-3 frases con el dato clave + CTA de comentario + 15 hashtags:
 `#gym #gimnasio #fitness #gymhumor #humorgym #musculacion #entrenamiento #gymespaña #fitnessespañol #gymtips #consejosgym` + 4 del tema.
 
 ## 7. YouTube Shorts (Metricool, blogId 7943370), sin TikTok
