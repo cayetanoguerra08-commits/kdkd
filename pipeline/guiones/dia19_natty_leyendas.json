@@ -1,0 +1,18 @@
+{
+  "id": "dia19_natty_leyendas",
+  "dia": 19,
+  "lineas": [
+    {"quien": "chico", "animo": "orgullo", "texto": "¡Ese influencer es natural! ¡En 3 meses estoy igual!", "voz": "¡Ese influencer es natural! ¡En tres meses estoy igual!", "clave": ["natural!"],
+     "tarjeta": {"tipo": "titulo", "texto": "NATURAL EN 3 MESES", "sub": "¿mito o realidad?"}},
+    {"quien": "robot", "pantalla": "rayas", "texto": "Analizando foto. Hombros de nevera y dice que solo come pollo. Claro.", "clave": ["Claro."], "sello": "MITO"},
+    {"quien": "chico", "animo": "normal", "texto": "¡Pero lo jura en sus vídeos!", "clave": ["jura"]},
+    {"quien": "robot", "texto": "En 1995 midieron a 157 atletas. Ningún natural pasó de 25 de índice de masa magra.", "voz": "En mil novecientos noventa y cinco midieron a ciento cincuenta y siete atletas. Ningún natural pasó de veinticinco de índice de masa magra.", "clave": ["Ningún", "natural"],
+     "tarjeta": {"tipo": "dato", "etiqueta": "Límite natural (FFMI)", "valor": 25, "unidad": "", "nota": "Kouri et al., 1995: 157 atletas"}},
+    {"quien": "robot", "texto": "Tú, el primer año, ganarás medio kilo o un kilo de músculo al mes. Y cada año, menos.", "clave": ["menos."],
+     "tarjeta": {"tipo": "lista", "titulo": "Músculo real natural", "items": [["Año 1", "0,5-1 kg/mes"], ["Año 2", "la mitad"], ["Año 3", "aún menos"], ["Clave", "AÑOS"]]}},
+    {"quien": "chico", "animo": "susto", "texto": "Entonces, ¿me compro su batido secreto?", "clave": ["secreto?"]},
+    {"quien": "robot", "pantalla": "404", "texto": "Error. Su único secreto es tu código de descuento.", "clave": ["descuento."]},
+    {"quien": "robot", "texto": "Comenta: ¿natural o no natural?", "clave": ["natural?"],
+     "tarjeta": {"tipo": "cta", "arriba": "COMENTA", "grande": "¿NATURAL O NO?", "abajo": "el robot responde a todos"}}
+  ]
+}
